@@ -6,12 +6,13 @@ import (
 	"log"
 
 	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
-	"github.com/sulejman/scratchain/pkg/config"
 )
 
 var (
-	DB    *sql.DB
-	err   error
+	// DB is shared database
+	DB  *sql.DB
+	err error
+	// DBErr is database connection error
 	DBErr error
 )
 
@@ -19,16 +20,9 @@ var (
 func Setup() {
 	var db = DB
 
-	config := config.GetConfig()
+	//config := config.GetConfig()
 
-	driver := config.Database.Driver
-	database := config.Database.Dbname
-	username := config.Database.Username
-	password := config.Database.Password
-	host := config.Database.Host
-	port := config.Database.Port
-
-	db, err = sql.Open("sqlite3", "../../scratchain.db")
+	db, err = sql.Open("sqlite3", "scratchain.db")
 
 	if err != nil {
 		DBErr = err
@@ -38,18 +32,19 @@ func Setup() {
 	DB = db
 }
 
-func genesis(db *sql.DB) {
+// Genesis creates tables
+func Genesis(db *sql.DB) {
 	createBlocksTableSQL := `CREATE TABLE blocks (
 		"header" TEXT NOT NULL PRIMARY KEY,		
 		"previous" TEXT,
 		"next" TEXT,
-		"transactions TEXT" 		
+		"transactions" TEXT 		
 	  );`
 
 	createTransactionsTableSQL := `CREATE TABLE transactions (
 		"from"  TEXT NOT NULL PRIMARY KEY,		
 		"to" TEXT,
-		"amount" DOUBLE,
+		"amount" DOUBLE
 	  );`
 
 	log.Println("Creating blocks table...")
@@ -61,7 +56,7 @@ func genesis(db *sql.DB) {
 	log.Println("Blocks table created")
 
 	log.Println("Creating transactions table...")
-	statement, err := db.Prepare(createTransactionsTableSQL)
+	statement, err = db.Prepare(createTransactionsTableSQL)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
